@@ -47,6 +47,26 @@ app.use(sessions({
   activeDuration : 5 * 60 * 1000
 }));
 
+//always update session
+app.use(function (req, res, next) {
+  if (req.session && req.session.user) {
+    User.findOne({ email : req.session.user.email }, function (err, user) {
+      if (user) {
+        req.user = user;
+        delete req.user.password;
+        req.session.user = req.user;
+        res.locals.user = req.user;
+        console.log('session updated');
+      }
+      console.log('user is false');
+      next();
+    });
+  } else {
+    console.log('req.session or req.session.user is false');
+    next();
+  }
+});
+
 app.use('/', routes);
 app.use('/users', users);
 app.use('/register', register);
