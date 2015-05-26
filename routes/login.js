@@ -21,7 +21,7 @@ router.post('/', function (req, res) {
 			// check if password given is correct
 			var inputPassword = req.body.password;
 			var dbPassword = user.password;
-			if ( bcrypt.compare(inputPassword, dbPassword)) {
+			if ( bcrypt.compareSync(inputPassword, dbPassword)) {
 				req.session.user = user;
 				res.redirect('/dashboard');
 			} else {

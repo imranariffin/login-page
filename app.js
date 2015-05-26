@@ -25,8 +25,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hjs');
 
 //connect to mongoDB
-// mongoose.connect('mongodb://localhost/auth');
-mongoose.connect('mongodb://heroku_app37225823:suvhb017btosa6ldjd2qgtsvq0@ds041032.mongolab.com:41032/heroku_app37225823');
+mongoose.connect('mongodb://localhost/auth');
+// mongoose.connect('mongodb://heroku_app37225823:suvhb017btosa6ldjd2qgtsvq0@ds041032.mongolab.com:41032/heroku_app37225823');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
