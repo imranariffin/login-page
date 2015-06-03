@@ -60,6 +60,7 @@ app.use(function (req, res, next) {
         console.log('session updated');
       }
       console.log('user is false');
+      // res.redirect('/dashboard');
       next();
     });
   } else {
