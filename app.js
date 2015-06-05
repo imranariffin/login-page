@@ -82,7 +82,7 @@ passport.use(new FacebookStrategy({
               console.log('err: ' + err);
             } else {
               console.log('save in db success');
-              return true;
+              return done(null, profile);
             }
           });
         }
@@ -154,15 +154,38 @@ app.use('/reset', reset);
 //facebook logins
 app.get('/auth/facebook', passport.authenticate('facebook', { 
   scope : 'email' 
-}));
-app.get('/auth/facebook/callback', 
- passport.authenticate('facebook', {
-        successRedirect : '/dashboard',
-        failureRedirect : '/'
 }),
- function (req, res) {
-  res.redirect('/dashboard');
+function (req, res) {
 });
+
+app.get('/auth/facebook/callback', 
+ passport.authenticate('facebook'
+  // , {
+  //       successRedirect : '/dashboard',
+  //       failureRedirect : '/'}
+        ), 
+ function (req, res) {
+
+  // req.user = profile;
+
+  console.log('res: ' + res);
+  console.log('req: ' + req);
+  // console.log(res.user);
+  // console.log(req);
+  console.log(req.user.displayName);
+
+  User.findOne({ email : req.user.emails[0].value }, function (err, user) {
+    if (user) {
+      req.session.user = user;
+      res.redirect('/dashboard');
+    } else {
+      res.send('error: no user found');
+    }
+  });
+  // res.redirect('/dashboard');
+ });
+
+console.log('passport.session: ' + passport.session);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

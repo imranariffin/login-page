@@ -11,6 +11,9 @@
 
     <h3>User Information: </h3>
     <p>
+        FB user email : {{ fbEmail }}
+    </p>
+    <p>
     	user email : {{ user.email }}
     </p>
     <p>

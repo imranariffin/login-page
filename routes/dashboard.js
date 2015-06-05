@@ -18,15 +18,15 @@ router.get('/', requireLogin, function(req, res, next) {
 //always check if user is logged in or not.
 // if not redirect to login page
 function requireLogin (req, res, next) {
-	if (req.user) {
+	if (req.user || req.isAuthenticated()) {
 		next();
 	} else {
 		console.log('req.user is false');
 
 		//TEST///
-		next();
+		// next();
 
-		// res.redirect('/login');
+		res.redirect('/login');
 	}
 }
 
