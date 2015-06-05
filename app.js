@@ -7,6 +7,9 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var sessions = require('client-sessions');
 var bcrypt = require('bcryptjs');
+var passport = require('passport');
+var FacebookStrategy = require('passport-facebook').Strategy;
+var config = require('./config/auth');
 //mongoDB setup
 var mongoose = require('mongoose');
 var Schema = require('./schemas/schemas.js');
@@ -21,12 +24,79 @@ var reset = require('./routes/reset');
 
 var app = express();
 
+//connect to mongoDB
+mongoose.connect('mongodb://localhost/auth');
+
+//setup facebook passport
+passport.serializeUser(function (user, done) {
+  done(null, user);
+});
+passport.deserializeUser(function (obj, done) {
+  done(null, obj);
+});
+
+passport.use(new FacebookStrategy({
+    clientID      : config.facebookAuth.clientID,
+    clientSecret  : config.facebookAuth.clientSecret ,
+    callbackURL   : config.facebookAuth.callbackURL
+},
+  function (accessToken, refreshToken, profile, done) {
+    process.nextTick(function () {
+      console.log('succces: now time for db codes');
+
+      console.log('in profile: ')
+      for (i in profile) {
+        var item = profile[i];
+        console.log('item ' + i + ' ' + item);
+      }
+
+      console.log('profile.emails[0].value: ' + profile.emails[0].value);
+
+      User.findOne({ 
+        email : profile.emails[0].value 
+      }, function (err, user) {
+        if (err) {
+          throw err;
+        } 
+
+        if (user) {
+          console.log('success: user exists');
+
+        } else {
+          console.log('success: user does not exist');
+          console.log('update db');
+          
+          var user = new User({
+            // id : 'genericID'
+            email     : profile.emails[0].value
+            , firstName : profile._raw['first_name']
+            , lastName  : profile._raw['last_name']
+            , password  : 'password'
+          });
+
+          // console.log('req: ' + req);
+          // console.log('res: ' + res);
+
+          user.save(function (err) {
+            if (err) {
+              console.log('err: ' + err);
+            } else {
+              console.log('save in db success');
+              return true;
+            }
+          });
+        }
+      });
+
+      return done(null, profile);
+    });
+  }
+));
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hjs');
 
-//connect to mongoDB
-mongoose.connect('mongodb://localhost/auth');
 // mongoose.connect('mongodb://heroku_app37225823:suvhb017btosa6ldjd2qgtsvq0@ds041032.mongolab.com:41032/heroku_app37225823');
 
 // uncomment after placing your favicon in /public
@@ -36,6 +106,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(require('less-middleware')(path.join(__dirname, 'public')));
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 
 //middlewares
@@ -79,6 +151,18 @@ app.use('/logout', function (req, res) {
   res.redirect('/');
 });
 app.use('/reset', reset);
+//facebook logins
+app.get('/auth/facebook', passport.authenticate('facebook', { 
+  scope : 'email' 
+}));
+app.get('/auth/facebook/callback', 
+ passport.authenticate('facebook', {
+        successRedirect : '/dashboard',
+        failureRedirect : '/'
+}),
+ function (req, res) {
+  res.redirect('/dashboard');
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

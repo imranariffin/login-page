@@ -22,7 +22,11 @@ function requireLogin (req, res, next) {
 		next();
 	} else {
 		console.log('req.user is false');
-		res.redirect('/login');
+
+		//TEST///
+		next();
+
+		// res.redirect('/login');
 	}
 }
 

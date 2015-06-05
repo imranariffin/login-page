@@ -3,10 +3,23 @@
   <head>
     <title>{{ title }}</title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+    <style>
+        body        { padding-top:80px; }
+    </style>
   </head>
   <body>
     <h1>{{ title }}</h1>
     <p>Welcome to {{ title }}</p>
     <p> please <a href="/login">login</a> or <a href="/register">register </a> to continue</p>
+    <br>
+    <br>
+
+    <div style="width:500px;height:180px;">
+      <h2 style="font-size:40px;">or login with facebook: </h2>
+      <a href="/auth/facebook"><img src="http://i.stack.imgur.com/ZW4QC.png" width="151" height="36"></a>
+    </div>
+    
   </body>
 </html>
