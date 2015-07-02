@@ -35,10 +35,12 @@ router.post('/', formalizeUserName, function (req, res) {
 			res.send("Error: " + err);	
 		} else {
 			console.log("Save success");
+			console.log("user:");
+			console.log(user);
 			res.redirect('/dashboard');
 		}
 		res.end();
-	})
+	});
 });
 
 // callback function

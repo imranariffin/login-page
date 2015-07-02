@@ -8,8 +8,7 @@ var mongoose = require('mongoose');
 var sessions = require('client-sessions');
 var bcrypt = require('bcryptjs');
 var passport = require('passport');
-var FacebookStrategy = require('passport-facebook').Strategy;
-var config = require('./config/auth');
+var setupPassport = require('./functions/setup-passport');
 //mongoDB setup
 var mongoose = require('mongoose');
 var Schema = require('./schemas/schemas.js');
@@ -27,71 +26,8 @@ var app = express();
 //connect to mongoDB
 mongoose.connect('mongodb://localhost/auth');
 
-//setup facebook passport
-passport.serializeUser(function (user, done) {
-  done(null, user);
-});
-passport.deserializeUser(function (obj, done) {
-  done(null, obj);
-});
-
-passport.use(new FacebookStrategy({
-    clientID      : config.facebookAuth.clientID,
-    clientSecret  : config.facebookAuth.clientSecret ,
-    callbackURL   : config.facebookAuth.callbackURL
-},
-  function (accessToken, refreshToken, profile, done) {
-    process.nextTick(function () {
-      console.log('succces: now time for db codes');
-
-      console.log('in profile: ')
-      for (i in profile) {
-        var item = profile[i];
-        console.log('item ' + i + ' ' + item);
-      }
-
-      console.log('profile.emails[0].value: ' + profile.emails[0].value);
-
-      User.findOne({ 
-        email : profile.emails[0].value 
-      }, function (err, user) {
-        if (err) {
-          throw err;
-        } 
-
-        if (user) {
-          console.log('success: user exists');
-
-        } else {
-          console.log('success: user does not exist');
-          console.log('update db');
-          
-          var user = new User({
-            // id : 'genericID'
-            email     : profile.emails[0].value
-            , firstName : profile._raw['first_name']
-            , lastName  : profile._raw['last_name']
-            , password  : 'password'
-          });
-
-          // console.log('req: ' + req);
-          // console.log('res: ' + res);
-
-          user.save(function (err) {
-            if (err) {
-              console.log('err: ' + err);
-            } else {
-              console.log('save in db success');
-              return done(null, profile);
-            }
-          });
-        }
-      });
-
-      return done(null, profile);
-    });
-  }
-));
+//setup passport: serialize(), deserialize(), .use()
+setupPassport(app, passport);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -121,7 +57,11 @@ app.use(sessions({
 }));
 
 //always update session
-app.use(function (req, res, next) {
+app.use(updateSession);
+
+// always update session in case current user
+// logs out and another different user logs in
+function updateSession (req, res, next) { //user next() for next middleware
   if (req.session && req.session.user) {
     User.findOne({ email : req.session.user.email }, function (err, user) {
       if (user) {
@@ -139,7 +79,7 @@ app.use(function (req, res, next) {
     console.log('req.session or req.session.user is false');
     next();
   }
-});
+}
 
 app.use('/', routes);
 app.use('/users', users);
@@ -156,36 +96,41 @@ app.get('/auth/facebook', passport.authenticate('facebook', {
   scope : 'email' 
 }),
 function (req, res) {
+  res.redirect('dashboard');
 });
 
 app.get('/auth/facebook/callback', 
- passport.authenticate('facebook'
-  // , {
-  //       successRedirect : '/dashboard',
-  //       failureRedirect : '/'}
-        ), 
- function (req, res) {
+  passport.authenticate('facebook'), 
+  // redirectToDashboard
+  redirectToMain
+);
 
-  // req.user = profile;
+// function redirectToDashboard (req, res) {
+function redirectToMain (req, res) {
 
-  console.log('res: ' + res);
-  console.log('req: ' + req);
-  // console.log(res.user);
-  // console.log(req);
-  console.log(req.user.displayName);
+console.log('redirecting to dashboard');
+console.log('res: ' + res);
+console.log('req: ' + req);
+console.log(req.user.displayName);
 
-  User.findOne({ email : req.user.emails[0].value }, function (err, user) {
+User.findOne({ email : req.user.emails[0].value }, function (err, user) {
+  if (!err) {
     if (user) {
       req.session.user = user;
-      res.redirect('/dashboard');
+      console.log(req.session.user);
+      console.log('redirect to dashboard');
+      // res.redirect('/dashboard');
+      res.redirect('/');
     } else {
+      console.log('error: no user found');
       res.send('error: no user found');
     }
-  });
-  // res.redirect('/dashboard');
- });
-
-console.log('passport.session: ' + passport.session);
+  } else {
+    console.log('Error: ' + err);
+    res.send('Error: ' + err);
+  }
+});
+}
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -15,7 +15,12 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/', function (req, res) {
-	User.findOne({email : req.body.email}, function (err, user) {
+	// get email from request
+	var email = req.body.email;
+	// email has to be all lowercase
+	email = email.toLowerCase();
+	// find user based on email --- email is unique
+	User.findOne({email : email}, function (err, user) {
 		//check if user exist
 		if (user) {
 			// check if password given is correct
@@ -23,7 +28,8 @@ router.post('/', function (req, res) {
 			var dbPassword = user.password;
 			if ( bcrypt.compareSync(inputPassword, dbPassword)) {
 				req.session.user = user;
-				res.redirect('/dashboard');
+				// res.redirect('/dashboard');
+				res.redirect('/');
 			} else {
 				res.send('Error: wrong password for ' + user.email);
 			}
