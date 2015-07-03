@@ -24,7 +24,9 @@ var reset = require('./routes/reset');
 var app = express();
 
 //connect to mongoDB
-mongoose.connect('mongodb://localhost/auth');
+var MONGO_URI = require('./config/mongo').MONGO_URI;
+// mongoose.connect('mongodb://localhost/auth');
+mongoose.connect(MONGO_URI);
 
 //setup passport: serialize(), deserialize(), .use()
 setupPassport(app, passport);
@@ -108,28 +110,28 @@ app.get('/auth/facebook/callback',
 // function redirectToDashboard (req, res) {
 function redirectToMain (req, res) {
 
-console.log('redirecting to dashboard');
-console.log('res: ' + res);
-console.log('req: ' + req);
-console.log(req.user.displayName);
+  console.log('redirecting to dashboard');
+  console.log('res: ' + res);
+  console.log('req: ' + req);
+  console.log(req.user.displayName);
 
-User.findOne({ email : req.user.emails[0].value }, function (err, user) {
-  if (!err) {
-    if (user) {
-      req.session.user = user;
-      console.log(req.session.user);
-      console.log('redirect to dashboard');
-      // res.redirect('/dashboard');
-      res.redirect('/');
+  User.findOne({ email : req.user.emails[0].value }, function (err, user) {
+    if (!err) {
+      if (user) {
+        req.session.user = user;
+        console.log(req.session.user);
+        console.log('redirect to dashboard');
+        // res.redirect('/dashboard');
+        res.redirect('/');
+      } else {
+        console.log('error: no user found');
+        res.send('error: no user found');
+      }
     } else {
-      console.log('error: no user found');
-      res.send('error: no user found');
+      console.log('Error: ' + err);
+      res.send('Error: ' + err);
     }
-  } else {
-    console.log('Error: ' + err);
-    res.send('Error: ' + err);
-  }
-});
+  });
 }
 
 // catch 404 and forward to error handler

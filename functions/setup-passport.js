@@ -69,6 +69,10 @@ function setupPassport (app, passport) {
           }
         });
 
+
+        // save  accessToken
+        // req.session.accessToken = accessToken;
+
         return done(null, profile);
       });
     }

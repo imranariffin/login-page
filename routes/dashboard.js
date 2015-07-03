@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 
+var passport = require('passport');
+
 //get session from login
 var login = require('./login');
 
@@ -12,7 +14,26 @@ var User = Schemas.User;
 /* GET home page. */
 router.get('/', requireLogin, function(req, res, next) {
 	console.log('test');
-	res.render('dashboard.hjs', { title : 'Dashboard'}); 
+	// console.log('req.user:');
+	// console.log(req.user);
+
+	// console.log('req.session:');
+	// console.log(req.session);
+	console.log('req:');
+	console.log(req);
+
+	passport.serializeUser(function (user, done) {
+		console.log('in serializeUser: user:');
+		console.log(user);
+
+		done(null, user);
+	});
+
+	console.log(passport);
+
+	res.send(req.user);
+
+	// res.render('dashboard.hjs', { title : 'Dashboard'}); 
 });
 
 //always check if user is logged in or not.
