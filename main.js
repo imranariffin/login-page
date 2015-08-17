@@ -24,9 +24,9 @@ var reset = require('./routes/reset');
 var app = express();
 
 //connect to mongoDB
-var MONGO_URI = require('./config/mongo').MONGO_URI;
-// mongoose.connect('mongodb://localhost/auth');
-mongoose.connect(MONGO_URI);
+// var MONGO_URI = require('./config/mongo').MONGO_URI;
+mongoose.connect('mongodb://localhost/auth');
+// mongoose.connect(MONGO_URI);
 
 //setup passport: serialize(), deserialize(), .use()
 setupPassport(app, passport);
@@ -64,6 +64,11 @@ app.use(updateSession);
 // always update session in case current user
 // logs out and another different user logs in
 function updateSession (req, res, next) { //user next() for next middleware
+
+  console.log('\n\n');
+  console.log("in updateSesion()");
+  console.log('\n\n');
+
   if (req.session && req.session.user) {
     User.findOne({ email : req.session.user.email }, function (err, user) {
       if (user) {
@@ -96,10 +101,11 @@ app.use('/reset', reset);
 //facebook logins
 app.get('/auth/facebook', passport.authenticate('facebook', { 
   scope : 'email' 
-}),
-function (req, res) {
-  res.redirect('dashboard');
-});
+})
+// , function (req, res) {
+//   res.redirect('dashboard');
+// }
+);
 
 app.get('/auth/facebook/callback', 
   passport.authenticate('facebook'), 
@@ -118,10 +124,36 @@ function redirectToMain (req, res) {
   User.findOne({ email : req.user.emails[0].value }, function (err, user) {
     if (!err) {
       if (user) {
+
+        // TEST
+        console.log('');
+        console.log('req.user:');
+        console.log(req.user);
+        console.log('req.session.user:');
+        console.log(req.session.user);
+        console.log('req.session:');
+        console.log(req.session);
+        console.log('');
+
+
         req.session.user = user;
+        console.log('req.session.user:');
         console.log(req.session.user);
         console.log('redirect to dashboard');
         // res.redirect('/dashboard');
+        res.redirect('/');
+      } else if (req.user || req.session.user) {
+        
+        // TEST
+        console.log('');
+        console.log('req.user:');
+        console.log(req.user);
+        console.log('req.session.user:');
+        console.log(req.session.user);
+        console.log('req.session:');
+        console.log(req.session);
+        console.log('');
+
         res.redirect('/');
       } else {
         console.log('error: no user found');

@@ -30,24 +30,38 @@ function setupPassport (app, passport) {
 
         console.log('profile.emails[0].value: ' + profile.emails[0].value);
 
+        console.log('\n');
+        console.log('facebook profile:');
+        console.log(profile);
+        console.log('\n');
+
         //find user using profile given be Facebook
-        User.findOne({ 
-          email : profile.emails[0].value 
-        }, function (err, user) {
+        User.findOne({ email : profile.emails[0].value }, function (err, user) {
           //check for error
           if (err) {
             throw err;
           } 
 
           //if no error
-          if (user) {
+          if (user) { 
             //done
             console.log('success: user exists');
+            return done(null, profile);
           } else {
             //update db with profile provided by Facebook
             console.log('success: user does not exist');
             console.log('update db');
             
+            // // TEST
+            // console.log('');
+            // console.log('req.user:');
+            // console.log(req.user);
+            // console.log('req.session.user:');
+            // console.log(req.session.user);
+            // console.log('req.session:');
+            // console.log(req.session);
+            // console.log('');
+                    
             //create new user using profile info from Facebook
             var user = new User({
               // id : 'genericID'
@@ -55,6 +69,12 @@ function setupPassport (app, passport) {
               , firstName : profile._json['first_name']
               , lastName  : profile._json['last_name']
               , password  : 'password'
+              , facebookToken : accessToken
+              , facebook : {
+                accessToken : accessToken,
+                profile : profile,
+                refreshToken : refreshToken
+              }
             });
 
             //update db
@@ -73,7 +93,7 @@ function setupPassport (app, passport) {
         // save  accessToken
         // req.session.accessToken = accessToken;
 
-        return done(null, profile);
+        // return done(null, profile);
       });
     }
   ));

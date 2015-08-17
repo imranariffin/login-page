@@ -10,6 +10,12 @@ var User = mongoose.model('User', new Schema ({
 	,lastName : String
 	,email : {type : String, unique : true}
 	,password : String
+	,facebookToken : String
+	,facebook : {
+		acccessToken : String,
+		profile : Object,
+		refreshToken : String
+	}
 	// ,visits : Number
 }));
 
